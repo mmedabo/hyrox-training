@@ -492,9 +492,9 @@ function crewTab(me, people, who) {
   <section class="card reveal settings">
     <p class="sync ${st.state}">${!S.hasToken() ? 'Preview · not synced' : st.state === 'error' ? '⚠ ' + esc(st.error) : st.state === 'saving' ? 'Saving…' : st.last ? 'Synced ' + ago(st.last) : 'Connecting…'}</p>
     ${installEvt ? '<button class="btn wide" data-act="install">Install app</button>' : /iphone|ipad/i.test(navigator.userAgent) && !navigator.standalone ? '<p class="hint">Install: Safari → Share → Add to Home Screen</p>' : ''}
-    ${!spotify.isConfigured() ? '<p class="hint">Spotify: add your Client ID in spotify.js (see README)</p>'
-      : spotify.isConnected() ? '<button class="btn-ghost wide" data-act="spotout">Disconnect Spotify</button>'
-      : '<button class="btn-ghost wide" data-act="spotin">Connect Spotify</button>'}
+    ${!spotify.isConfigured() ? ''
+      : spotify.isConnected() ? '<button class="btn-ghost wide spotify" data-act="spotout">Spotify connected ✓ · disconnect</button>'
+      : '<button class="btn-ghost wide spotify" data-act="spotin">Connect Spotify</button>'}
     <button class="btn-ghost wide" data-act="switch">Switch person</button>
     ${me.role !== 'guest' ? '' : '<button class="btn-ghost wide" data-act="leave">Leave crew (frees your spot)</button>'}
     ${S.hasToken() ? '<button class="link" data-act="signout">Forget access key on this phone</button>' : ''}
@@ -600,7 +600,7 @@ $app.addEventListener('click', async e => {
     setTimeout(() => a.pause(), 3000);
   }
   else if (act === 'playmusic') {
-    if (!spotify.isConfigured()) toast('Add your Spotify Client ID in spotify.js — see README');
+    if (!spotify.isConfigured()) toast('Spotify isn’t set up yet');
     else if (!spotify.isConnected()) { toast('Connecting to Spotify…'); spotify.login().catch(e => toast(e.message)); }
     else {
       try { await spotify.play(b.dataset.uri); toast('▶ ' + b.dataset.pl); }
