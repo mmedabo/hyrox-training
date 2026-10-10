@@ -208,6 +208,9 @@ h1, h2, h3 { font-family: var(--head); font-stretch: 125%; text-transform: upper
 .sec > header::after { content: ''; position: absolute; left: 0; bottom: -1px; width: 100%; height: 2px; background: var(--grad); transform: scaleX(.12); transform-origin: left; transition: transform .6s var(--ease), background .3s; }
 .sec.full > header::after { transform: scaleX(1); background: var(--ok); }
 .sec h3 { font-size: 15px; font-weight: 800; }
+.btn-music { width: 32px; height: 32px; min-height: 32px; padding: 0; border-radius: 50%; background: transparent; border: 1px solid #1db954; color: #1db954; font-size: 15px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; transition: background .2s, color .2s, transform .15s; }
+.btn-music:active { background: #1db954; color: #000; transform: scale(.9); }
+@media (hover: hover) { .btn-music:hover { background: #1db954; color: #000; } }
 .pick { font: 12px var(--mono); color: var(--mute); flex: 1; white-space: nowrap; }
 .pick b { color: var(--text); }
 .sec.full .pick b { color: var(--ok); }

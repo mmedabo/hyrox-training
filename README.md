@@ -9,6 +9,7 @@ A private crew training checklist for HYROX Kuala Lumpur (11–13 Dec 2026, MITE
 - **Weight log:** every rep-based exercise has a kg box. It shows your last weight for that exercise (green when you beat it), and under the exercise name everyone else's latest weight in their colour (▲ when it's heavier than yours), so the crew can compare. Tap "last …" under the kg box for a weight-over-time chart with one line per person.
 - **Muscle map:** front/back body with a day filter (All/Tue/Thu/Sat/Sun). Tap a muscle to see which exercises hit it. Orange = primary, blue = secondary, green = core/rehab, dark = rest. It is built from each exercise's `muscles` text in `plan.json` (`muscles.js`). Muscle shapes are traced from [innerbody.com's muscular system map](https://www.innerbody.com/image/musfov.html).
 - **Arnold soundboard:** a fold-out panel on the Today tab with 9 short Arnold clips (`sounds/*.m4a`, each under 3 s).
+- **Spotify music:** each section header has a green ♪ button that starts an energy-matched Spotify playlist (Beast Mode for lifting, Power Workout for arms/core, Cardio for the warm-up, Peaceful Piano for recovery/stretch). Needs a one-time Spotify app setup and Spotify Premium — see "Spotify music" below.
 - **Sync icon:** top right. Green = synced (tap to sync now), spinning = saving, red dot = error (tap to retry), grey dot = preview, not syncing (tap to add a key).
 - **Phone first:** a bottom tab bar with Today, Calendar, Muscles and Crew.
 - **Crew:** the top-right corner shows how many people are online and a dot for each person. Tap a dot to see that person's checklist (read only). Everyone's ticks show as coloured dots on each exercise.
@@ -43,6 +44,31 @@ The photos come from Wikimedia Commons, cropped to the face, and are used here u
 - Pages builds from `main`, so check-ins never trigger a rebuild.
 - `_items/` holds the raw training export and is gitignored. Never commit it.
 - The official HYROX font, Brutal Type, is licensed, so the site uses Archivo Expanded, Inter and JetBrains Mono from Google Fonts instead.
+
+## Spotify music
+
+Each section header has a green ♪ button. Tapping it starts a playlist that fits the section's energy on your Spotify, so you can train to it. Playback uses Spotify's Web API with the PKCE login flow — no client secret, nothing sensitive in this public repo.
+
+**What you need:** Spotify **Premium** (the API can only start playback for Premium accounts), and a free Spotify developer app for the Client ID.
+
+**One-time setup:**
+
+1. Go to [developer.spotify.com](https://developer.spotify.com/dashboard) → **Create app**. Any name/description is fine.
+2. Under **Redirect URIs**, add these two, exactly, trailing slash and all:
+   - `https://mikachufm2202.github.io/hyrox-training/`
+   - `http://127.0.0.1:8765/` (for local testing — use `127.0.0.1`, not `localhost`, which Spotify no longer accepts)
+3. Under **APIs used**, tick **Web API**. Save.
+4. Open the app's **Settings**, copy the **Client ID**, and paste it into `spotify.js`:
+   ```js
+   const CLIENT_ID = 'your-client-id-here';
+   ```
+5. Commit and push. In the app, open the **Crew** tab → **Connect Spotify**, approve once, and the ♪ buttons go live.
+
+**How playback works:** the ♪ button tells your *active* Spotify device to play the playlist, so have Spotify open on your phone or desktop first. If no device is active, the app opens the playlist in Spotify so you can hit play (and that device then becomes active for next time).
+
+**Changing the music:** the four playlists live in `music.js`. To swap any of them, open a playlist in Spotify → **Share → Copy link**, and paste the id (the part after `/playlist/`) in place of the one there. The section-to-playlist rules are in the same file.
+
+**Notes:** the login is per person and stored only on that device (so each crew member connects their own Spotify). Everything is client-side; the Client ID is public by design (it's safe to commit — PKCE needs no secret).
 
 ## Access key (one shared fine-grained token)
 

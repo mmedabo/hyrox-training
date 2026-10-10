@@ -1,5 +1,7 @@
 import * as S from './store.js';
 import { muscleMap, MUSCLES } from './muscles.js';
+import * as spotify from './spotify.js';
+import { playlistFor } from './music.js';
 
 const COLORS = ['#ff6b2b', '#ffb020', '#2ecc71', '#4da6ff', '#b07cff', '#ff5fc8', '#2ee6e6'];   // no near-duplicates: these tell people apart in charts
 // Guest heads: freely licensed Wikimedia Commons photos, credits in README.md.
@@ -341,10 +343,11 @@ function dayPanel(who, mine, people) {
       <ul class="rows">${plan.warmup.items.map(it => row(who, mine, people, `${sel}|wu:${slug(it.name)}`, it, false)).join('')}</ul>
     </details>
     ${st.s.sections.map(sec => {
-      const ss = secStats(who, sel, sec), full = ss.resolved >= sec.pick;
+      const ss = secStats(who, sel, sec), full = ss.resolved >= sec.pick, pl = playlistFor(sec.name);
       return `<section class="sec ${ss.skipped ? 'skipped' : ''} ${sec.pick && full && !ss.skipped ? 'full' : ''}">
         <header><h3>${esc(sec.name)}</h3>
           <span class="pick">${sec.pick ? `Pick ${sec.pick} · <b>${ss.resolved}/${sec.pick}</b>` : 'Optional'}</span>
+          ${mine ? `<button class="btn-music" data-act="playmusic" data-uri="${esc(pl.uri)}" data-url="${esc(pl.url)}" data-pl="${esc(pl.name)}" title="Play ${esc(pl.name)} on Spotify" aria-label="Play ${esc(pl.name)} on Spotify">♪</button>` : ''}
           ${mine && sec.pick ? `<button class="btn-ghost sm" data-act="skipsec" data-k="${esc(secKey(sel, sec))}">${ss.skipped ? 'Undo' : 'Skip'}</button>` : ''}</header>
         ${ss.skipped ? `<p class="note">Skipped${/core/i.test(sec.name) ? ' · core sore. Add an extra arm exercise under Bonus.' : '.'}</p>` : sec.note ? `<p class="note">${esc(sec.note)}</p>` : ''}
         ${ss.skipped ? '' : `<ul class="rows">${sec.items.map(it => row(who, mine, people, itemKey(sel, it), it, full)).join('')}</ul>`}
@@ -489,6 +492,9 @@ function crewTab(me, people, who) {
   <section class="card reveal settings">
     <p class="sync ${st.state}">${!S.hasToken() ? 'Preview · not synced' : st.state === 'error' ? '⚠ ' + esc(st.error) : st.state === 'saving' ? 'Saving…' : st.last ? 'Synced ' + ago(st.last) : 'Connecting…'}</p>
     ${installEvt ? '<button class="btn wide" data-act="install">Install app</button>' : /iphone|ipad/i.test(navigator.userAgent) && !navigator.standalone ? '<p class="hint">Install: Safari → Share → Add to Home Screen</p>' : ''}
+    ${!spotify.isConfigured() ? '<p class="hint">Spotify: add your Client ID in spotify.js (see README)</p>'
+      : spotify.isConnected() ? '<button class="btn-ghost wide" data-act="spotout">Disconnect Spotify</button>'
+      : '<button class="btn-ghost wide" data-act="spotin">Connect Spotify</button>'}
     <button class="btn-ghost wide" data-act="switch">Switch person</button>
     ${me.role !== 'guest' ? '' : '<button class="btn-ghost wide" data-act="leave">Leave crew (frees your spot)</button>'}
     ${S.hasToken() ? '<button class="link" data-act="signout">Forget access key on this phone</button>' : ''}
@@ -593,6 +599,19 @@ $app.addEventListener('click', async e => {
     a.play().catch(() => {});
     setTimeout(() => a.pause(), 3000);
   }
+  else if (act === 'playmusic') {
+    if (!spotify.isConfigured()) toast('Add your Spotify Client ID in spotify.js — see README');
+    else if (!spotify.isConnected()) { toast('Connecting to Spotify…'); spotify.login().catch(e => toast(e.message)); }
+    else {
+      try { await spotify.play(b.dataset.uri); toast('▶ ' + b.dataset.pl); }
+      catch (e) {
+        if (e.code === 'NO_DEVICE') { toast('No active device — opening Spotify'); if (!window.open(b.dataset.url, '_blank', 'noopener')) location.href = b.dataset.url; }
+        else toast(e.message);
+      }
+    }
+  }
+  else if (act === 'spotin') { spotify.login().catch(e => toast(e.message)); }
+  else if (act === 'spotout') { spotify.disconnect(); toast('Spotify disconnected'); render(); }
   else if (act === 'install') { installEvt.prompt(); installEvt = null; render(); }
   else if (act === 'signout') { viewing = null; preview = false; S.ls.set('preview', false); S.signOut(); }
   else if (act === 'preview' || act === 'addkey') { preview = act === 'preview'; S.ls.set('preview', preview); err = ''; render(); }
@@ -665,7 +684,10 @@ document.addEventListener('visibilitychange', () => {
 addEventListener('online', tick);
 
 (async () => {
+  let spotMsg = '';
+  try { if (await spotify.handleRedirect()) spotMsg = 'Spotify connected'; } catch (e) { spotMsg = e.message; }
   render();
+  if (spotMsg) toast(spotMsg);
   try { plan = await (await fetch('plan.json', { cache: 'no-cache' })).json(); }
   catch { $app.innerHTML = '<div class="loading">Offline. Open once with internet first.</div>'; return; }
   if (linkKey && !S.hasToken()) { try { await S.connect(linkKey); } catch (x) { err = x.message; } }
