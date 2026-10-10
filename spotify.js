@@ -5,7 +5,7 @@
 //   1. developer.spotify.com → Dashboard → Create app.
 //   2. Copy its Client ID into CLIENT_ID below.
 //   3. In the app's settings, add this exact Redirect URI:
-//        https://mikachufm2202.github.io/hyrox-training/
+//        https://mmedabo.github.io/hyrox-training/
 //      and, for local testing, http://127.0.0.1:8765/ (use 127.0.0.1, not localhost).
 //   4. Save. That's it — no secret, no server.
 const CLIENT_ID = 'PASTE_YOUR_SPOTIFY_CLIENT_ID_HERE';

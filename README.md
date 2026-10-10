@@ -55,7 +55,7 @@ Each section header has a green ♪ button. Tapping it starts a playlist that fi
 
 1. Go to [developer.spotify.com](https://developer.spotify.com/dashboard) → **Create app**. Any name/description is fine.
 2. Under **Redirect URIs**, add these two, exactly, trailing slash and all:
-   - `https://mikachufm2202.github.io/hyrox-training/`
+   - `https://mmedabo.github.io/hyrox-training/`
    - `http://127.0.0.1:8765/` (for local testing — use `127.0.0.1`, not `localhost`, which Spotify no longer accepts)
 3. Under **APIs used**, tick **Web API**. Save.
 4. Open the app's **Settings**, copy the **Client ID**, and paste it into `spotify.js`:
